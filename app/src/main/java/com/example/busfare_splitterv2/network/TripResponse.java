@@ -65,9 +65,7 @@ public class TripResponse {
         return date;
     }
 
-    public double getTotalCost() {
-        return totalCost;
-    }
+    public double getTotalCost() { return totalCost; }
 
     public int getUserId() {
         return userId;

@@ -1,49 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_onSecondary"
-    >
-    <LinearLayout
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:orientation="vertical"
-        >
-        <TextView
-            android:layout_height="50dp"
-            android:layout_width="match_parent"
-            android:text="ABOUT US"
-            android:gravity="center"
-            />
+    android:background="#121212"
+    android:padding="24dp">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Header -->
         <TextView
-            android:layout_height="50dp"
-            android:layout_width="match_parent"
-            android:text="Our Story: Bus Fare Splitter was born from a simple frustrating experience: a group struggling to decide how to split the cost on a trip. Our mission is to take the frustrating mathematics out."
-            android:gravity=""
-            />
+            android:id="@+id/tvHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="About Us"
+            android:textColor="#FF1744"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Our Story -->
         <TextView
-            android:layout_marginTop="50dp"
-            android:layout_height="50dp"
+            android:id="@+id/tvStory"
             android:layout_width="match_parent"
-            android:text="What We Do: We provide a simple, intuitive tool that helps friends, families, and colleagues split transportation costs fairly. Whether it is a cross country trip or daily commute."
-            android:gravity=""
-            />
+            android:layout_height="wrap_content"
+            android:text="@string/our_story"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:lineSpacingExtra="6dp"
+            android:layout_marginBottom="20dp"
+            android:background="#1E1E1E"
+            android:padding="16dp"
+            android:elevation="4dp"
+            android:layout_marginHorizontal="8dp"
+            android:backgroundTint="#1E1E1E" />
+
+        <!-- What We Do -->
         <TextView
-            android:layout_marginTop="50dp"
-            android:layout_height="50dp"
+            android:id="@+id/tvWeDo"
             android:layout_width="match_parent"
-            android:text="copyright © bussplitter 2025."
+            android:layout_height="wrap_content"
+            android:text="@string/we_do"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:lineSpacingExtra="6dp"
+            android:layout_marginBottom="20dp"
+            android:background="#1E1E1E"
+            android:padding="16dp"
+            android:elevation="4dp"
+            android:layout_marginHorizontal="8dp"
+            android:backgroundTint="#1E1E1E" />
+
+        <!-- Footer -->
+        <TextView
+            android:id="@+id/tvFooter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="© 2025 BusFareSplitter"
+            android:textColor="#888888"
+            android:textSize="14sp"
             android:gravity="center"
-            />
-        <Button
-            android:layout_width="200dp"
-            android:layout_height="100dp"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Back Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBackAbout"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
             android:text="Back"
-            android:onClick="back"
-            android:layout_gravity="center"
-            />
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:backgroundTint="#FF1744"
+            app:cornerRadius="12dp"
+            android:elevation="8dp"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginBottom="16dp"
+            android:onClick="back"/>
 
     </LinearLayout>
 </ScrollView>

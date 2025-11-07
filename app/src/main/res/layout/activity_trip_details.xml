@@ -24,7 +24,8 @@
             android:contentDescription="Back"
             android:padding="8dp"
             android:src="@drawable/ic_back_arrow"
-            app:tint="#FF1744" />
+            app:tint="#FF1744"
+            android:onClick="backToHome"/>
 
         <TextView
             android:id="@+id/tvHeader"
@@ -145,4 +146,14 @@
         app:backgroundTint="#FF1744"
         app:cornerRadius="8dp" />
 
+    <!-- Add this inside your NestedScrollView, at the end of the LinearLayout -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddPassenger"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add"
+        app:backgroundTint="#FF1744"
+        app:tint="#FFFFFF" />
 </LinearLayout>

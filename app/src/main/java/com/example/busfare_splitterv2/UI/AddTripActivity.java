@@ -26,6 +26,7 @@ import com.example.busfare_splitterv2.network.PassengerRequest;
 import com.example.busfare_splitterv2.network.TripRequest;
 import com.example.busfare_splitterv2.network.TripResponse;
 import com.google.android.material.button.MaterialButton;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,6 +53,7 @@ public class AddTripActivity extends AppCompatActivity {
     private MaterialButton btnCalculate;
     private ApiService apiService;
     private String authToken;
+    private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +69,9 @@ public class AddTripActivity extends AppCompatActivity {
         btnAddPassenger = findViewById(R.id.tvAddPassenger);
         btnCalculate = findViewById(R.id.btnCalculate);
 
-        // API setup
+        prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
         apiService = ApiClient.getApiService();
-        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+
         String token = prefs.getString("jwt_token", null);
         if (token == null) {
             Toast.makeText(this, "Session expired. Please login again.", Toast.LENGTH_LONG).show();
@@ -95,20 +97,18 @@ public class AddTripActivity extends AppCompatActivity {
             }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
         });
 
-        // Passenger RecyclerView setup
-        // Initialize adapter and pass the actual passenger list
+        // Passenger RecyclerView setup - FIXED: Updated to use 2 parameters
         passengerAdapter = new PassengerAdapter(
                 passengerList,
-                pos -> {
+                (pos, passenger) -> {  // FIX: Added second parameter
                     passengerList.remove(pos);
                     passengerAdapter.notifyItemRemoved(pos);
                 },
-                pos -> showEditPassengerDialog(pos, passengerList.get(pos))
+                (pos, passenger) -> showEditPassengerDialog(pos, passenger)  // FIX: Added second parameter
         );
 
         rvPassengers.setLayoutManager(new LinearLayoutManager(this));
         rvPassengers.setAdapter(passengerAdapter);
-
 
         // Swipe to delete passengers
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
@@ -116,7 +116,7 @@ public class AddTripActivity extends AppCompatActivity {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
                                   RecyclerView.ViewHolder target) {
-                return false; // we don't want drag & drop
+                return false;
             }
 
             @Override
@@ -215,6 +215,12 @@ public class AddTripActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     TripResponse tripResponse = response.body();
                     Log.i("AddTripActivity", "Trip created: " + tripResponse.getId());
+
+                    // Save surcharges locally
+                    List<Double> surcharges = new ArrayList<>();
+                    for (PassengerRequest p : passengerList) surcharges.add(p.surcharge);
+                    new Gson().toJson(surcharges);
+                    prefs.edit().putString("trip_surcharges_" + tripResponse.getId(), new Gson().toJson(surcharges)).apply();
 
                     Intent i = new Intent(AddTripActivity.this, TripDetailsActivity.class);
                     i.putExtra("trip_id", tripResponse.getId());

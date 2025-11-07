@@ -37,43 +37,57 @@
             android:layout_marginHorizontal="8dp"
             android:clipChildren="false"
             android:backgroundTint="#1E1E1E">
-
+            <!-- Start City -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Start"
-                android:textColorHint="#FF3B30"
-                >
+                android:textColorHint="#FF1744"
+                app:boxStrokeColor="#FFFFFF"
+                app:boxStrokeWidthFocused="2dp"
+                app:boxBackgroundColor="#1E1E1E"
+                app:hintTextColor="#FF1744"
+                app:boxStrokeErrorColor="#FF1744">
 
                 <AutoCompleteTextView
                     android:id="@+id/actvStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="16dp"
+                    android:background="@null"
+                    android:paddingVertical="16dp"
                     android:textColor="#FFFFFF"
+                    android:textColorHint="#AAAAAA"
+                    android:inputType="none"
+                    android:popupBackground="#2C2C2C"
                     android:text="Select start city" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Destination City -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Destination"
-                android:textColorHint="#FF1744">
+                android:textColorHint="#FF1744"
+                app:boxStrokeColor="#FFFFFF"
+                app:boxStrokeWidthFocused="2dp"
+                app:boxBackgroundColor="#1E1E1E"
+                app:hintTextColor="#FF1744"
+                app:boxStrokeErrorColor="#FF1744">
 
                 <AutoCompleteTextView
                     android:id="@+id/actvDestination"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="16dp"
+                    android:background="@null"
+                    android:paddingVertical="16dp"
                     android:textColor="#FFFFFF"
+                    android:textColorHint="#AAAAAA"
+                    android:inputType="none"
+                    android:popupBackground="#2C2C2C"
                     android:text="Select destination" />
             </com.google.android.material.textfield.TextInputLayout>
 

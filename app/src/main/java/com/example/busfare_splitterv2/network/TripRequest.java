@@ -32,6 +32,7 @@ public class TripRequest {
         return date;
     }
 
+
     public List<PassengerRequest> getPassengers() {
         return passengers;
     }

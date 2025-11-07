@@ -1,5 +1,1 @@
-<resources>
-    <string name="app_name">BusFare_SplitterV2</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-</resources>
+<resources> <string name="app_name">BusFare_SplitterV2</string> <string name="navigation_drawer_open">Open navigation drawer</string> <string name="navigation_drawer_close">Close navigation drawer</string> <string name="our_story">Our Story: Bus Fare Splitter was born from a simple, frustrating experience: a group trip where splitting costs became a confusing mess of calculations. We realised there had to be a better way to handle calculations fairly and transparently.</string> <string name="we_do">What we do: We provide a simple, intuitive tool that helps friends, families, and colleagues split transportation costs fairly. Whether a it is a cross country adventure or a weekend getaway</string> </resources>

@@ -50,7 +50,13 @@ public class Trip implements Serializable {
     public double getTotalCost() { return totalCost; }
     public void setTotalCost(double totalCost) { this.totalCost = totalCost; }
 
-    public List<PassengerShare> getPassengers() { return passengers; }
-    public void setPassengers(List<PassengerShare> passengers) { this.passengers = passengers; }
+    public void setPassengers(List<PassengerShare> passengers) {
+        this.passengers = passengers != null ? passengers : new ArrayList<>();
+    }
+
+    public int getNumberPassengers() {
+        return passengers != null ? passengers.size() : 0;
+    }
+
 
 }

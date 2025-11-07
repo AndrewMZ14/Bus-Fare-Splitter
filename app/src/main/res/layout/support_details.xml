@@ -1,63 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_onSecondary"
-    >
+    android:background="#121212"
+    android:fillViewport="true">
+
     <LinearLayout
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
         android:orientation="vertical"
-        >
+        android:padding="24dp"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Title -->
         <TextView
-            android:layout_height="50dp"
-            android:layout_width="match_parent"
-            android:text="SUPPORT CONTACTS"
+            android:text="Support Contacts"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#FF1744"
             android:gravity="center"
-            />
+            android:layout_marginBottom="32dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Contact Info -->
+        <TextView
+            android:text="📞 Phone: +260 971 234 567"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
         <TextView
-            android:layout_height="50dp"
+            android:text="✉️ Email: busfaresplitter25@gmail.com"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"
             android:layout_width="match_parent"
-            android:text="PHONE: 0755108361"
-            android:gravity=""
-            />
+            android:layout_height="wrap_content" />
+
         <TextView
-            android:layout_height="50dp"
+            android:text="📘 Facebook: @busfaresplitter25"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"
             android:layout_width="match_parent"
-            android:text="EMAIL:bussplitter@gmail.com"
-            />
+            android:layout_height="wrap_content" />
+
         <TextView
-            android:layout_height="50dp"
+            android:text="🐦 Twitter: @busfaresplitter25"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"
             android:layout_width="match_parent"
-            android:text="SUPPORT WEBSITE:www.bussplitter.com"
-            />
+            android:layout_height="wrap_content" />
+
         <TextView
-            android:layout_height="50dp"
+            android:text="📸 Instagram: @busfaresplitter25"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginBottom="32dp"
             android:layout_width="match_parent"
-            android:text="FACEBOOK: @BusFareSplitter"
-            android:gravity=""
-            />
+            android:layout_height="wrap_content" />
+
+        <!-- Copyright -->
         <TextView
-            android:layout_height="50dp"
-            android:layout_width="match_parent"
-            android:text="TWITTER: @BusFareSplitter"
-            android:gravity=""
-            />
-        <TextView
-            android:layout_height="50dp"
-            android:layout_width="match_parent"
-            android:text="copyright © bussplitter 2025."
+            android:text="© 2025 BusFareSplitter"
+            android:textColor="#888888"
+            android:textSize="14sp"
             android:gravity="center"
-            />
-        <Button
-            android:layout_width="200dp"
-            android:layout_height="100dp"
+            android:layout_marginBottom="32dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Back Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/back2"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
             android:text="Back"
-            android:onClick="back"
-            android:layout_gravity="center"
-            />
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:backgroundTint="#333333"
+            android:elevation="6dp"
+            android:onClick="back"/>
 
     </LinearLayout>
 </ScrollView>

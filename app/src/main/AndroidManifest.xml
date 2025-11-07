@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -14,16 +17,24 @@
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.BusFare_SplitterV2">
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
-    <activity
+
+        <activity
             android:name=".UI.ProfileActivity"
             android:exported="false" />
 
-        <activity android:name=".UI.Settings"
+        <activity
+            android:name=".UI.Settings"
             android:exported="false" />
-
-
-
 
         <activity android:name=".UI.SupportDetails" />
         <activity android:name=".UI.AboutUs" />

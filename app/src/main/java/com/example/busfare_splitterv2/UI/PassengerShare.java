@@ -6,7 +6,7 @@ public class PassengerShare {
 
     public int surcharge;
     private int id;
-    private String name;
+    public String name;
 
     @SerializedName("share_amount")
     private double shareAmount;

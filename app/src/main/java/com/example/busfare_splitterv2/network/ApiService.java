@@ -18,8 +18,10 @@ public interface ApiService {
     @POST("auth/login")
     Call<UserResponse> login(@Body UserLoginRequest request);
 
-    @GET("trips")
-    Call<List<Trip>> getTrips(@Header("Authorization") String token);
+
+    @GET("/trips/")
+    Call<List<TripResponse>> getTrips(@Header("Authorization") String token);
+
 
     @POST("trips/")  // add the trailing slash
     Call<TripResponse> addTrip(@Header("Authorization") String authToken,

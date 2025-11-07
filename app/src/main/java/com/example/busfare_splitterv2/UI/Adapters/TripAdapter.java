@@ -13,6 +13,7 @@ import com.example.busfare_splitterv2.UI.Trip;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class TripAdapter extends RecyclerView.Adapter<TripAdapter.VH> {
 
@@ -40,7 +41,8 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.VH> {
         Trip trip = trips.get(position);
         holder.tvRoute.setText(trip.getStart() + " → " + trip.getDestination());
         holder.tvDate.setText(trip.getDate());
-        holder.tvTotal.setText(String.format("K%.2f", trip.getTotalCost()));
+        holder.tvTotal.setText(String.format(Locale.getDefault(), "K%.2f", trip.getTotalCost()));
+        holder.tvPassengers.setText(trip.getNumberPassengers() + " Passengers");
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onTripClick(trip);
@@ -58,13 +60,14 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.VH> {
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView tvRoute, tvDate, tvTotal;
+        TextView tvRoute, tvDate, tvTotal, tvPassengers;
 
         VH(@NonNull View itemView) {
             super(itemView);
             tvRoute = itemView.findViewById(R.id.tvRoute);
             tvDate = itemView.findViewById(R.id.tvDate);
             tvTotal = itemView.findViewById(R.id.tvTotal);
+            tvPassengers = itemView.findViewById(R.id.tvPassengers);
         }
     }
 }

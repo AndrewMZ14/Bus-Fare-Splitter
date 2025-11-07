@@ -18,6 +18,7 @@ import com.example.busfare_splitterv2.R;
 import com.example.busfare_splitterv2.UI.Adapters.TripAdapter;
 import com.example.busfare_splitterv2.network.ApiClient;
 import com.example.busfare_splitterv2.network.ApiService;
+import com.example.busfare_splitterv2.network.TripResponse;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -43,7 +44,6 @@ public class TripListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip_list);
 
-        // UI References
         rvTrips = findViewById(R.id.rvTrips);
         trips = new ArrayList<>();
         tvEmpty = findViewById(R.id.tvEmpty);
@@ -51,48 +51,42 @@ public class TripListActivity extends AppCompatActivity {
         imageView = findViewById(R.id.ivProfile);
         FloatingActionButton fab = findViewById(R.id.fabAdd);
 
-        // API + prefs
         apiService = ApiClient.getApiService();
         prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
 
-        // RecyclerView setup
         rvTrips.setLayoutManager(new LinearLayoutManager(this));
         adapter = new TripAdapter(trips, trip -> {
-            // Go to split screen for this trip
             Intent i = new Intent(TripListActivity.this, TripDetailsActivity.class);
             i.putExtra("trip_id", trip.getId());
             startActivity(i);
         });
         rvTrips.setAdapter(adapter);
 
-        // Swipe-to-delete setup
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
-                ItemTouchHelper.LEFT) {
+        // Swipe-to-delete
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(RecyclerView recyclerView,
                                   RecyclerView.ViewHolder viewHolder,
                                   RecyclerView.ViewHolder target) {
-                return false; // no drag & drop
+                return false;
             }
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
-                Trip tripToDelete = trips.get(position);
-                deleteTrip(tripToDelete.getId(), position);
+                deleteTrip(trips.get(position).getId(), position);
             }
         }).attachToRecyclerView(rvTrips);
 
-        // Profile click
-        imageView.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ProfileActivity.class);
-            startActivity(intent);
-        });
-
-        // Floating button
+        imageView.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
         fab.setOnClickListener(v -> startActivity(new Intent(this, AddTripActivity.class)));
 
-        // Load trips
+        loadTripsFromServer();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         loadTripsFromServer();
     }
 
@@ -111,17 +105,17 @@ public class TripListActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     trips.remove(position);
                     adapter.notifyItemRemoved(position);
+                    tvEmpty.setVisibility(trips.isEmpty() ? View.VISIBLE : View.GONE);
                     Toast.makeText(TripListActivity.this, "Trip deleted", Toast.LENGTH_SHORT).show();
-                    if (trips.isEmpty()) tvEmpty.setVisibility(View.VISIBLE);
                 } else {
-                    adapter.notifyItemChanged(position); // restore swipe
+                    adapter.notifyItemChanged(position);
                     Toast.makeText(TripListActivity.this, "Failed to delete trip", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                adapter.notifyItemChanged(position); // restore swipe
+                adapter.notifyItemChanged(position);
                 Toast.makeText(TripListActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
@@ -140,33 +134,40 @@ public class TripListActivity extends AppCompatActivity {
         tvEmpty.setVisibility(View.GONE);
         rvTrips.setVisibility(View.GONE);
 
-        apiService.getTrips("Bearer " + token).enqueue(new Callback<List<Trip>>() {
+        apiService.getTrips("Bearer " + token).enqueue(new Callback<List<TripResponse>>() {
             @Override
-            public void onResponse(Call<List<Trip>> call, Response<List<Trip>> response) {
+            public void onResponse(Call<List<TripResponse>> call, Response<List<TripResponse>> response) {
                 progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
-                    trips = response.body();
+                    List<TripResponse> tripResponses = response.body();
+                    List<Trip> tripsList = new ArrayList<>();
+
+                    for (TripResponse tripResponse : tripResponses) {
+                        Trip t = new Trip();
+                        t.setId(tripResponse.getId());
+                        t.setStart(tripResponse.getStart());
+                        t.setDestination(tripResponse.getDestination());
+                        t.setDate(tripResponse.getDate());
+                        t.setTotalCost(tripResponse.getTotalCost());
+                        t.setPassengers(tripResponse.getPassengers() != null ? tripResponse.getPassengers() : new ArrayList<>());
+                        tripsList.add(t);
+                    }
+
+                    trips = tripsList;
                     adapter.updateTrips(trips);
-                    if (trips.isEmpty()) tvEmpty.setVisibility(View.VISIBLE);
-                    else rvTrips.setVisibility(View.VISIBLE);
+                    rvTrips.setVisibility(View.VISIBLE);
+                    tvEmpty.setVisibility(trips.isEmpty() ? View.VISIBLE : View.GONE);
+
                 } else {
-                    tvEmpty.setVisibility(View.VISIBLE);
                     Toast.makeText(TripListActivity.this, "Failed to load trips", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Trip>> call, Throwable t) {
+            public void onFailure(Call<List<TripResponse>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
-                tvEmpty.setVisibility(View.VISIBLE);
-                Toast.makeText(TripListActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(TripListActivity.this, "Network error", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadTripsFromServer(); // Auto-refresh
     }
 }

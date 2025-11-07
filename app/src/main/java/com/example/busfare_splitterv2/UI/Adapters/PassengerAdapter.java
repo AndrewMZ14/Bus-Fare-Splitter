@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.busfare_splitterv2.R;
-import com.example.busfare_splitterv2.UI.PassengerShare;
 import com.example.busfare_splitterv2.network.PassengerRequest;
 
 import java.util.ArrayList;
@@ -19,15 +18,20 @@ import java.util.Locale;
 
 public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.VH> {
 
-    private final List<PassengerRequest> passengers;
+    private List<PassengerRequest> passengers;
     private final OnRemove removeListener;
     private final OnEdit editListener;
 
-    public interface OnRemove { void onRemove(int pos); }
-    public interface OnEdit { void onEdit(int pos); }
+    public interface OnRemove {
+        void onRemove(int pos, PassengerRequest passenger);
+    }
+
+    public interface OnEdit {
+        void onEdit(int pos, PassengerRequest passenger);
+    }
 
     public PassengerAdapter(List<PassengerRequest> passengers, OnRemove removeListener, OnEdit editListener) {
-        this.passengers = passengers;
+        this.passengers = passengers != null ? new ArrayList<>(passengers) : new ArrayList<>();
         this.removeListener = removeListener;
         this.editListener = editListener;
     }
@@ -43,16 +47,19 @@ public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.VH> 
     public void onBindViewHolder(@NonNull VH holder, int position) {
         PassengerRequest p = passengers.get(position);
         holder.tvName.setText(p.name);
-        holder.tvShare.setText(String.format(Locale.getDefault(), "K%.2f", p.surcharge));
+
+        // Use the getDisplayAmount() method which returns shareAmount if set, otherwise surcharge
+        double displayAmount = p.getDisplayAmount();
+        holder.tvShare.setText(String.format(Locale.getDefault(), "K%.2f", displayAmount));
 
         holder.btnRemove.setOnClickListener(v -> {
             if (removeListener != null)
-                removeListener.onRemove(holder.getAdapterPosition());
+                removeListener.onRemove(holder.getAdapterPosition(), p);
         });
 
         holder.itemView.setOnClickListener(v -> {
             if (editListener != null)
-                editListener.onEdit(holder.getAdapterPosition());
+                editListener.onEdit(holder.getAdapterPosition(), p);
         });
     }
 
@@ -69,6 +76,28 @@ public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.VH> 
         notifyDataSetChanged();
     }
 
+    public void addPassenger(PassengerRequest passenger) {
+        this.passengers.add(passenger);
+        notifyItemInserted(this.passengers.size() - 1);
+    }
+
+    public void removePassenger(int position) {
+        if (position >= 0 && position < passengers.size()) {
+            this.passengers.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    public void updatePassenger(int position, PassengerRequest passenger) {
+        if (position >= 0 && position < passengers.size()) {
+            this.passengers.set(position, passenger);
+            notifyItemChanged(position);
+        }
+    }
+
+    public List<PassengerRequest> getPassengers() {
+        return new ArrayList<>(passengers);
+    }
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvShare;
@@ -82,4 +111,3 @@ public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.VH> 
         }
     }
 }
-
