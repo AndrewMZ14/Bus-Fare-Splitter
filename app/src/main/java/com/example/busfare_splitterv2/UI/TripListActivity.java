@@ -18,9 +18,13 @@ import com.example.busfare_splitterv2.R;
 import com.example.busfare_splitterv2.UI.Adapters.TripAdapter;
 import com.example.busfare_splitterv2.network.ApiClient;
 import com.example.busfare_splitterv2.network.ApiService;
+import com.example.busfare_splitterv2.network.PassengerRequest;
 import com.example.busfare_splitterv2.network.TripResponse;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,6 +107,9 @@ public class TripListActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
+                    // Also clear the saved passenger list for this trip
+                    clearSavedPassengerList(tripId);
+
                     trips.remove(position);
                     adapter.notifyItemRemoved(position);
                     tvEmpty.setVisibility(trips.isEmpty() ? View.VISIBLE : View.GONE);
@@ -149,6 +156,8 @@ public class TripListActivity extends AppCompatActivity {
                         t.setDestination(tripResponse.getDestination());
                         t.setDate(tripResponse.getDate());
                         t.setTotalCost(tripResponse.getTotalCost());
+
+                        // Store the original passengers
                         t.setPassengers(tripResponse.getPassengers() != null ? tripResponse.getPassengers() : new ArrayList<>());
                         tripsList.add(t);
                     }
@@ -169,5 +178,17 @@ public class TripListActivity extends AppCompatActivity {
                 Toast.makeText(TripListActivity.this, "Network error", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void clearSavedPassengerList(int tripId) {
+        // Clear both passenger list and surcharges when trip is deleted
+        String userId = prefs.getString("user_id", "default_user");
+        String passengerListKey = "trip_passengers_" + userId + "_" + tripId;
+        String surchargeKey = "trip_surcharges_" + userId + "_" + tripId;
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(passengerListKey);
+        editor.remove(surchargeKey);
+        editor.apply();
     }
 }

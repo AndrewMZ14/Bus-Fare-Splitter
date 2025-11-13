@@ -88,6 +88,12 @@ public class TripDetailsActivity extends AppCompatActivity {
         passengerSurcharges = new HashMap<>();
 
         fabAddPassenger.setOnClickListener(v -> showAddPassengerDialog());
+
+        // Set back button click listener - maintain previous transition
+        backBtn.setOnClickListener(v -> {
+            // Go back to previous activity (TripListActivity)
+            finish();
+        });
     }
 
     private void setupRecyclerView() {
@@ -137,6 +143,11 @@ public class TripDetailsActivity extends AppCompatActivity {
         passengerSurcharges.put(passenger.name, passenger.surcharge);
         recalculateAndDisplayShares();
         saveSurchargesToPrefs();
+        savePassengerListToPrefs(); // Save the updated passenger list
+
+        // Show updated passenger count
+        updatePassengerCountDisplay();
+        Toast.makeText(this, "Passenger added: " + passenger.name, Toast.LENGTH_SHORT).show();
     }
 
     private void updatePassenger(int position, PassengerRequest updatedPassenger) {
@@ -147,6 +158,11 @@ public class TripDetailsActivity extends AppCompatActivity {
             currentPassengers.set(position, updatedPassenger);
             recalculateAndDisplayShares();
             saveSurchargesToPrefs();
+            savePassengerListToPrefs(); // Save the updated passenger list
+
+            // Show updated passenger count
+            updatePassengerCountDisplay();
+            Toast.makeText(this, "Passenger updated: " + updatedPassenger.name, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -157,6 +173,11 @@ public class TripDetailsActivity extends AppCompatActivity {
             currentPassengers.remove(position);
             recalculateAndDisplayShares();
             saveSurchargesToPrefs();
+            savePassengerListToPrefs(); // Save the updated passenger list
+
+            // Show updated passenger count
+            updatePassengerCountDisplay();
+            Toast.makeText(this, "Passenger removed: " + removedPassenger.name, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -197,8 +218,16 @@ public class TripDetailsActivity extends AppCompatActivity {
 
     private void updatePassengerCountDisplay() {
         int passengerCount = currentPassengers.size();
-        tvPassengerCount.setText(String.format(Locale.getDefault(),
-                "%d Passengers split the fare", passengerCount));
+        String passengerText;
+
+        if (passengerCount == 1) {
+            passengerText = "1 Passenger splits the fare";
+        } else {
+            passengerText = String.format(Locale.getDefault(), "%d Passengers split the fare", passengerCount);
+        }
+
+        tvPassengerCount.setText(passengerText);
+        Log.d(TAG, "Updated passenger count display: " + passengerText);
     }
 
     private void loadTripDetails() {
@@ -257,7 +286,20 @@ public class TripDetailsActivity extends AppCompatActivity {
         currentPassengers.clear();
         passengerSurcharges.clear();
 
-        if (trip.getPassengers() != null && !trip.getPassengers().isEmpty()) {
+        // First, try to load the saved passenger list from SharedPreferences
+        List<PassengerRequest> savedPassengers = loadPassengerListFromPrefs();
+
+        if (savedPassengers != null && !savedPassengers.isEmpty()) {
+            // Use the saved passenger list (with deletions/applications)
+            Log.d(TAG, "Loading saved passenger list with " + savedPassengers.size() + " passengers");
+            for (PassengerRequest passenger : savedPassengers) {
+                currentPassengers.add(passenger);
+                passengerSurcharges.put(passenger.name, passenger.surcharge);
+            }
+        } else if (trip.getPassengers() != null && !trip.getPassengers().isEmpty()) {
+            // Fall back to server data if no saved passenger list exists
+            Log.d(TAG, "Loading passenger list from server with " + trip.getPassengers().size() + " passengers");
+
             // Load saved surcharges from SharedPreferences using user-specific key
             String userId = prefs.getString("user_id", "default_user");
             String surchargeKey = "trip_surcharges_" + userId + "_" + trip.getId();
@@ -284,9 +326,15 @@ public class TripDetailsActivity extends AppCompatActivity {
                 }
             }
 
-            // Always recalculate shares to ensure they're up to date
-            recalculateAndDisplayShares();
+            // Save the initial passenger list to preferences
+            savePassengerListToPrefs();
         }
+
+        // Always recalculate shares to ensure they're up to date
+        recalculateAndDisplayShares();
+
+        // Update passenger count display after loading
+        updatePassengerCountDisplay();
     }
 
     private void saveSurchargesToPrefs() {
@@ -300,6 +348,63 @@ public class TripDetailsActivity extends AppCompatActivity {
         editor.apply();
 
         Log.d(TAG, "Saved surcharges to prefs with key: " + surchargeKey + " - " + json);
+    }
+
+    private void savePassengerListToPrefs() {
+        if (currentTrip == null) return;
+
+        SharedPreferences.Editor editor = prefs.edit();
+        String userId = prefs.getString("user_id", "default_user");
+        String passengerListKey = "trip_passengers_" + userId + "_" + currentTrip.getId();
+        String json = new Gson().toJson(currentPassengers);
+        editor.putString(passengerListKey, json);
+        editor.apply();
+
+        Log.d(TAG, "Saved passenger list to prefs with key: " + passengerListKey + " - " + json);
+    }
+
+    private List<PassengerRequest> loadPassengerListFromPrefs() {
+        if (currentTrip == null) return new ArrayList<>();
+
+        String userId = prefs.getString("user_id", "default_user");
+        String passengerListKey = "trip_passengers_" + userId + "_" + currentTrip.getId();
+        String json = prefs.getString(passengerListKey, null);
+
+        if (json != null) {
+            try {
+                Type type = new TypeToken<List<PassengerRequest>>(){}.getType();
+                List<PassengerRequest> savedPassengers = new Gson().fromJson(json, type);
+                if (savedPassengers != null) {
+                    Log.d(TAG, "Loaded passenger list from prefs: " + savedPassengers.size() + " passengers");
+                    return savedPassengers;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading passenger list from prefs", e);
+            }
+        }
+
+        Log.d(TAG, "No saved passenger list found in prefs");
+        return new ArrayList<>();
+    }
+
+    private void clearPassengerListFromPrefs() {
+        if (currentTrip == null) return;
+
+        SharedPreferences.Editor editor = prefs.edit();
+        String userId = prefs.getString("user_id", "default_user");
+        String passengerListKey = "trip_passengers_" + userId + "_" + currentTrip.getId();
+        editor.remove(passengerListKey);
+        editor.apply();
+
+        Log.d(TAG, "Cleared passenger list from prefs with key: " + passengerListKey);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Optional: Clear the passenger list when the activity is destroyed
+        // if you want to reset to server data next time
+        // clearPassengerListFromPrefs();
     }
 
     private void exportTripAsCSV() {
@@ -359,6 +464,7 @@ public class TripDetailsActivity extends AppCompatActivity {
     }
 
     public void backToHome(View v) {
-        startActivity(new Intent(this, TripListActivity.class));
+        // Simply finish to go back to previous activity (TripListActivity)
+        finish();
     }
 }
