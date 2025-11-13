@@ -13,6 +13,7 @@
         android:paddingBottom="16dp"
         android:paddingTop="24dp">
 
+        <!-- HEADER -->
         <TextView
             android:id="@+id/tvHeader"
             android:layout_width="match_parent"
@@ -24,6 +25,7 @@
             android:textSize="28sp"
             android:textStyle="bold" />
 
+        <!-- TRIP DETAILS CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -35,8 +37,8 @@
             android:elevation="4dp"
             android:layout_marginBottom="24dp"
             android:layout_marginHorizontal="8dp"
-            android:clipChildren="false"
-            android:backgroundTint="#1E1E1E">
+            android:clipChildren="false">
+
             <!-- Start City -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -44,7 +46,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Start"
-                android:textColorHint="#FF1744"
                 app:boxStrokeColor="#FFFFFF"
                 app:boxStrokeWidthFocused="2dp"
                 app:boxBackgroundColor="#1E1E1E"
@@ -71,7 +72,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Destination"
-                android:textColorHint="#FF1744"
                 app:boxStrokeColor="#FFFFFF"
                 app:boxStrokeWidthFocused="2dp"
                 app:boxBackgroundColor="#1E1E1E"
@@ -91,13 +91,13 @@
                     android:text="Select destination" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Trip Date -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Date"
-                android:textColorHint="#FF1744"
                 app:endIconDrawable="@drawable/ic_calendar"
                 app:endIconTint="#FF3B30"
                 app:endIconMode="custom">
@@ -118,9 +118,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Total Cost"
-                android:textColorHint="#FF3B30"
                 app:prefixText="K"
-                app:prefixTextColor="#FF3B30">
+                app:prefixTextColor="#FF3B30"
+                app:boxStrokeColor="#FFFFFF"
+                app:boxBackgroundColor="#1E1E1E"
+                app:boxStrokeWidthFocused="2dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etTotalCost"
@@ -128,10 +130,12 @@
                     android:layout_height="wrap_content"
                     android:inputType="numberDecimal"
                     android:textColor="#FFFFFF"
-                    android:text="" />
+                    android:hint="" /> <!-- 👈 remove inner hint -->
             </com.google.android.material.textfield.TextInputLayout>
+
         </LinearLayout>
 
+        <!-- PASSENGER HEADER -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -142,20 +146,25 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
+        <!-- PASSENGER LIST -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="16dp">
 
+            <!-- ✅ FIXED: RecyclerView now expands fully and shows passengers -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvPassengers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:overScrollMode="never"
+                android:nestedScrollingEnabled="false"
                 android:layout_marginBottom="16dp"
-                tools:itemCount="2"
-                tools:layout_height="120dp" />
+                tools:listitem="@layout/item_passenger"
+                tools:itemCount="2" />
 
+            <!-- ADD PASSENGER BUTTON -->
             <TextView
                 android:id="@+id/tvAddPassenger"
                 android:layout_width="wrap_content"
@@ -166,12 +175,13 @@
                 android:focusable="true"
                 android:gravity="center_vertical"
                 android:text="Add Passenger"
-                android:textColor="#FF1740"
-                android:textSize="20sp"
+                android:textColor="#FF1744"
+                android:textSize="18sp"
                 app:drawableStartCompat="@drawable/ic_add_circle_outline"
                 app:drawableTint="#FF3B30" />
         </LinearLayout>
 
+        <!-- CREATE TRIP BUTTON -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCalculate"
             android:layout_width="match_parent"

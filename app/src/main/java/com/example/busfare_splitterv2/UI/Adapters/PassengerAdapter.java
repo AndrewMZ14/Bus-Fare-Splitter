@@ -1,3 +1,4 @@
+// PassengerAdapter.java
 package com.example.busfare_splitterv2.UI.Adapters;
 
 import android.view.LayoutInflater;
@@ -39,7 +40,8 @@ public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.VH> 
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_passenger, parent, false);
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_passenger, parent, false);
         return new VH(v);
     }
 
@@ -48,7 +50,7 @@ public class PassengerAdapter extends RecyclerView.Adapter<PassengerAdapter.VH> 
         PassengerRequest p = passengers.get(position);
         holder.tvName.setText(p.name);
 
-        // Use the getDisplayAmount() method which returns shareAmount if set, otherwise surcharge
+        // Display the correct amount (share or surcharge)
         double displayAmount = p.getDisplayAmount();
         holder.tvShare.setText(String.format(Locale.getDefault(), "K%.2f", displayAmount));
 

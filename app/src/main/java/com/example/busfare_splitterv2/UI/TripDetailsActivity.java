@@ -58,12 +58,14 @@ public class TripDetailsActivity extends AppCompatActivity {
     private TripResponse currentTrip;
     private List<PassengerRequest> currentPassengers;
     private Map<String, Double> passengerSurcharges;
+    private int currentTripId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip_details);
 
+        currentTripId = getIntent().getIntExtra("trip_id", -1);
         initializeViews();
         setupRecyclerView();
         loadTripDetails();
@@ -131,12 +133,6 @@ public class TripDetailsActivity extends AppCompatActivity {
     }
 
     private void addNewPassenger(PassengerRequest passenger) {
-        // Calculate the share amount for the new passenger
-        double baseShare = currentTrip.getTotalCost() / (currentPassengers.size() + 1);
-        double totalShare = baseShare + passenger.surcharge;
-
-        passenger.setShareAmount(totalShare); // Set the share amount
-
         currentPassengers.add(passenger);
         passengerSurcharges.put(passenger.name, passenger.surcharge);
         recalculateAndDisplayShares();
@@ -146,16 +142,8 @@ public class TripDetailsActivity extends AppCompatActivity {
     private void updatePassenger(int position, PassengerRequest updatedPassenger) {
         if (position >= 0 && position < currentPassengers.size()) {
             PassengerRequest oldPassenger = currentPassengers.get(position);
-
-            // Remove old surcharge and add new one
             passengerSurcharges.remove(oldPassenger.name);
             passengerSurcharges.put(updatedPassenger.name, updatedPassenger.surcharge);
-
-            // Update the passenger in the list - make sure to set shareAmount
-            double baseShare = currentTrip.getTotalCost() / currentPassengers.size();
-            double totalShare = baseShare + updatedPassenger.surcharge;
-            updatedPassenger.setShareAmount(totalShare);
-
             currentPassengers.set(position, updatedPassenger);
             recalculateAndDisplayShares();
             saveSurchargesToPrefs();
@@ -165,11 +153,8 @@ public class TripDetailsActivity extends AppCompatActivity {
     private void removePassenger(int position) {
         if (position >= 0 && position < currentPassengers.size()) {
             PassengerRequest removedPassenger = currentPassengers.get(position);
-
-            // Remove from both list and surcharges map
             passengerSurcharges.remove(removedPassenger.name);
             currentPassengers.remove(position);
-
             recalculateAndDisplayShares();
             saveSurchargesToPrefs();
         }
@@ -180,7 +165,6 @@ public class TripDetailsActivity extends AppCompatActivity {
 
         int passengerCount = currentPassengers.size();
         if (passengerCount == 0) {
-            // Clear the display if no passengers
             passengerAdapter.setPassengers(new ArrayList<>());
             updatePassengerCountDisplay();
             return;
@@ -188,23 +172,27 @@ public class TripDetailsActivity extends AppCompatActivity {
 
         double baseShare = currentTrip.getTotalCost() / passengerCount;
 
-        // Update all passengers with recalculated shares
         List<PassengerRequest> updatedPassengers = new ArrayList<>();
         for (PassengerRequest passenger : currentPassengers) {
-            double individualSurcharge = passengerSurcharges.getOrDefault(passenger.name, 0.0);
-            double totalShare = baseShare + individualSurcharge;
+            double surcharge = passengerSurcharges.getOrDefault(passenger.name, 0.0);
+            double totalShare = baseShare + surcharge;
 
-            // Create updated passenger with the calculated shareAmount
-            PassengerRequest updatedPassenger = new PassengerRequest(passenger.name, individualSurcharge);
-            updatedPassenger.setShareAmount(totalShare); // Set the calculated total
-
+            // Create updated passenger with correct share amount
+            PassengerRequest updatedPassenger = new PassengerRequest(passenger.name, surcharge);
+            updatedPassenger.setShareAmount(totalShare);
             updatedPassengers.add(updatedPassenger);
+
+            Log.d(TAG, "Recalculated: " + passenger.name + " - Base: " + baseShare +
+                    " + Surcharge: " + surcharge + " = Total: " + totalShare);
         }
 
         currentPassengers.clear();
         currentPassengers.addAll(updatedPassengers);
         passengerAdapter.setPassengers(currentPassengers);
         updatePassengerCountDisplay();
+
+        // Save the updated surcharges
+        saveSurchargesToPrefs();
     }
 
     private void updatePassengerCountDisplay() {
@@ -214,8 +202,7 @@ public class TripDetailsActivity extends AppCompatActivity {
     }
 
     private void loadTripDetails() {
-        int tripId = getIntent().getIntExtra("trip_id", -1);
-        if (tripId == -1) {
+        if (currentTripId == -1) {
             Toast.makeText(this, "Invalid trip ID.", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -230,7 +217,7 @@ public class TripDetailsActivity extends AppCompatActivity {
 
         progressBar.setVisibility(View.VISIBLE);
 
-        apiService.getTrip("Bearer " + token, tripId).enqueue(new Callback<TripResponse>() {
+        apiService.getTrip("Bearer " + token, currentTripId).enqueue(new Callback<TripResponse>() {
             @Override
             public void onResponse(Call<TripResponse> call, Response<TripResponse> response) {
                 progressBar.setVisibility(View.GONE);
@@ -253,12 +240,17 @@ public class TripDetailsActivity extends AppCompatActivity {
     }
 
     private void displayTripDetails(TripResponse trip) {
-        String routeDate = String.format(Locale.getDefault(), "%s → %s | %s",
-                trip.getStart(), trip.getDestination(), trip.getDate());
-        tvRouteDate.setText(routeDate);
+        try {
+            String routeDate = String.format(Locale.getDefault(), "%s → %s | %s",
+                    trip.getStart(), trip.getDestination(), trip.getDate());
+            tvRouteDate.setText(routeDate);
 
-        tvTotalCost.setText(String.format(Locale.getDefault(), "Total Cost — K%.2f", trip.getTotalCost()));
-        initializePassengersFromTrip(trip);
+            tvTotalCost.setText(String.format(Locale.getDefault(), "Total Cost — K%.2f", trip.getTotalCost()));
+            initializePassengersFromTrip(trip);
+        } catch (Exception e) {
+            Log.e(TAG, "Error displaying trip details", e);
+            Toast.makeText(this, "Error displaying trip details", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void initializePassengersFromTrip(TripResponse trip) {
@@ -266,30 +258,34 @@ public class TripDetailsActivity extends AppCompatActivity {
         passengerSurcharges.clear();
 
         if (trip.getPassengers() != null && !trip.getPassengers().isEmpty()) {
-            // Load saved surcharges from SharedPreferences
-            String json = prefs.getString("trip_surcharges_" + trip.getId(), "{}");
+            // Load saved surcharges from SharedPreferences using user-specific key
+            String userId = prefs.getString("user_id", "default_user");
+            String surchargeKey = "trip_surcharges_" + userId + "_" + trip.getId();
+            String json = prefs.getString(surchargeKey, "{}");
+
             Type type = new TypeToken<Map<String, Double>>(){}.getType();
             Map<String, Double> savedSurcharges = new Gson().fromJson(json, type);
             if (savedSurcharges == null) savedSurcharges = new HashMap<>();
 
-            // Calculate base share (total cost divided by number of passengers)
-            double baseShare = trip.getTotalCost() / trip.getPassengers().size();
-
             for (com.example.busfare_splitterv2.UI.PassengerShare ps : trip.getPassengers()) {
-                double individualSurcharge = savedSurcharges.getOrDefault(ps.getName(), 0.0);
-                double totalShare = baseShare + individualSurcharge;
+                try {
+                    // Use saved surcharge if available, otherwise use server value
+                    double individualSurcharge = savedSurcharges.getOrDefault(ps.getName(), (double) ps.getSurcharge());
 
-                // Create passenger and set the shareAmount
-                PassengerRequest passenger = new PassengerRequest(ps.getName(), individualSurcharge);
-                passenger.setShareAmount(totalShare); // This is the key line!
+                    PassengerRequest passenger = new PassengerRequest(ps.getName(), individualSurcharge);
 
-                currentPassengers.add(passenger);
-                passengerSurcharges.put(ps.getName(), individualSurcharge);
+                    // Store the surcharge in our map
+                    passengerSurcharges.put(ps.getName(), individualSurcharge);
+                    currentPassengers.add(passenger);
+
+                    Log.d(TAG, "Loaded passenger: " + ps.getName() + " - Surcharge: " + individualSurcharge);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error loading passenger: " + ps.getName(), e);
+                }
             }
 
-            // Update the adapter with the calculated values
-            passengerAdapter.setPassengers(currentPassengers);
-            updatePassengerCountDisplay();
+            // Always recalculate shares to ensure they're up to date
+            recalculateAndDisplayShares();
         }
     }
 
@@ -297,9 +293,13 @@ public class TripDetailsActivity extends AppCompatActivity {
         if (currentTrip == null) return;
 
         SharedPreferences.Editor editor = prefs.edit();
+        String userId = prefs.getString("user_id", "default_user");
+        String surchargeKey = "trip_surcharges_" + userId + "_" + currentTrip.getId();
         String json = new Gson().toJson(passengerSurcharges);
-        editor.putString("trip_surcharges_" + currentTrip.getId(), json);
+        editor.putString(surchargeKey, json);
         editor.apply();
+
+        Log.d(TAG, "Saved surcharges to prefs with key: " + surchargeKey + " - " + json);
     }
 
     private void exportTripAsCSV() {

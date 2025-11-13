@@ -1,6 +1,8 @@
 package com.example.busfare_splitterv2.network;
 
 import com.google.gson.annotations.SerializedName;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class TripRequest {
@@ -9,13 +11,14 @@ public class TripRequest {
     public String date;
     @SerializedName("totalCost")
     public double totalCost;
+    //public List<PassengerRequest> passengers;
 
     public TripRequest(String start, String destination, String date, double totalCost, List<PassengerRequest> passengers) {
         this.start = start;
         this.destination = destination;
         this.date = date;
         this.totalCost = totalCost;
-        this.passengers = passengers;
+        this.passengers = passengers != null ? passengers : new ArrayList<>();
     }
 
     public List<PassengerRequest> passengers;
